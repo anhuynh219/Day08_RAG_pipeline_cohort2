@@ -170,9 +170,35 @@ run_dashboard()
 
 ## Kiến Trúc Hệ Thống
 
+Stack "API-first, không tải model": embeddings & generation dùng **Gemini** (qua
+endpoint OpenAI-compatible), vector store **local numpy**, rerank **Jina API**,
+fallback **PageIndex**.
+
 ```
-[Vẽ diagram kiến trúc ở đây]
+                ┌──────────────────────── Ingestion (offline) ───────────────────────┐
+  .doc/PDF ─►  Task3 MarkItDown(+Word COM) ─►  .md  ─►  Task4 chunk + Gemini embed ─► data/index/
+  news URL ─►  Task2 trafilatura ─► .json ─────────────┘                              (chunks.json + embeddings.npy)
+
+                ┌──────────────────────── Query time (online) ───────────────────────┐
+   User ─► Streamlit app.py
+              │
+              ▼
+        Task9 retrieve()
+              ├─ Task5 Semantic (Gemini embed + cosine) ─┐
+              │                                          ├─ RRF merge ─► Task7 Jina rerank ─► top-k
+              ├─ Task6 Lexical (BM25) ───────────────────┘
+              │
+              └─ nếu best score < threshold ─► Task8 PageIndex (vectorless) fallback
+              │
+              ▼
+        Task10 generate_with_citation()  (reorder chống lost-in-the-middle → Gemini → câu trả lời có [citation])
+              │
+              ▼
+        Streamlit hiển thị answer + nguồn (score, loại, trích đoạn) + memory đa lượt
 ```
+
+**Đánh giá:** `evaluation/eval_pipeline.py` chấm bằng **DeepEval** với LLM judge =
+Gemini, so sánh A/B (có rerank vs không rerank) trên golden dataset 18 câu.
 
 ---
 
@@ -190,13 +216,22 @@ run_dashboard()
 ## Hướng Dẫn Chạy
 
 ```bash
-# Cài đặt dependencies
-pip install -r requirements.txt
+# 1. Cài đặt (uv tự tạo venv + cài deps lõi)
+uv sync                       # bài cá nhân (Task 1-10)
+uv sync --extra group         # thêm streamlit + deepeval cho bài nhóm
 
-# Chạy app
-streamlit run app.py
-# hoặc
-chainlit run app.py
+# 2. Điền API key vào .env (xem .env.example): GEMINI_API_KEY, JINA_API_KEY, PAGEINDEX_API_KEY
+
+# 3. Dựng index (chạy 1 lần): convert -> chunk -> embed
+uv run python -m src.task3_convert_markdown
+uv run python -m src.task4_chunking_indexing
+
+# 4a. Chatbot
+uv run streamlit run app.py
+
+# 4b. Evaluation (DeepEval + Gemini judge, so sánh A/B)
+uv run python -m group_project.evaluation.eval_pipeline           # full 18 câu
+uv run python -m group_project.evaluation.eval_pipeline --limit 6 # chạy nhanh
 ```
 
 ---
