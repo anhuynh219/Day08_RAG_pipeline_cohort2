@@ -205,13 +205,14 @@ Gemini, so sánh A/B (có rerank vs không rerank) trên golden dataset 18 câu.
 ## Phân Công Công Việc
 
 | Thành viên | MSSV | Nhiệm vụ | Trạng thái |
-|-----------|------|----------|------------|
-| | | | |
-| | | | |
-| | | | |
-| | | | |
+|---|---|---|---|
+| Huỳnh An Nghiệp | 2A202600853 | **Retrieval nâng cao & Pipeline:** Task 7 (reranking Jina + fallback) · Task 8 (PageIndex vectorless) · **Task 9** (pipeline hợp nhất + logic fallback) · tích hợp pipeline cả nhóm | ✅ |
+| Vũ Minh Duy | 2A202600806 | **Data & Ingestion:** Task 1 (thu thập ≥3 văn bản luật) · Task 2 (crawl 5 bài báo) · Task 3 (convert Markdown: Word COM + MarkItDown) | ✅ |
+| Phan Anh Thắng | 2A202600844 | **Indexing & Search:** Task 4 (chunking + embedding + index) · Task 5 (semantic search) · Task 6 (lexical BM25) · **Bonus:** HyDE + TF-IDF ("lexical khác BM25") | ✅ |
+| Đỗ Thị Huyền | 2A202600880 | **Đánh giá & Tài liệu:** golden dataset (18 câu) · DeepEval A/B (4 metric, Gemini judge) · `results.md` (phân tích worst-performers) · `ARCHITECTURE.md` | ✅ |
+| Phùng Bá Quân | 2A202600866 | **Generation & An ninh:** Task 10 (generation + citation + reorder chống lost-in-the-middle) · phòng thủ prompt injection (`build_messages`: spotlighting + sanitize + reinforcement) | ✅ |
+| Nguyễn Hoàng Long | 2A202600785 | **Chatbot UI & Deploy:** giao diện web (FastAPI `server.py` + `web/`) & Streamlit (`app.py`) · conversation memory · panel "Kho tài liệu" · **Bonus:** UI/UX + đóng gói deploy (Docker/HF Spaces/Render) | ✅ |
 
----
 
 ## Hướng Dẫn Chạy
 
