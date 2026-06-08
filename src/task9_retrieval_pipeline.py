@@ -29,17 +29,23 @@ def retrieve(
     top_k: int = DEFAULT_TOP_K,
     score_threshold: float = SCORE_THRESHOLD,
     use_reranking: bool = True,
+    use_hyde: bool = False,
+    lexical_method: str = "bm25",
 ) -> list[dict]:
     """
     Retrieval pipeline hoàn chỉnh với fallback logic.
+
+    Args:
+        use_hyde: bật HyDE (Hypothetical Document Embeddings) cho nhánh semantic.
+        lexical_method: "bm25" (mặc định) hoặc "tfidf" cho nhánh lexical.
 
     Returns:
         List of {'content', 'score', 'metadata', 'source'} với
         source ∈ {'hybrid', 'pageindex'}.
     """
     # Step 1: chạy semantic + lexical (lấy dư để merge)
-    dense = semantic_search(query, top_k=top_k * 2)
-    sparse = lexical_search(query, top_k=top_k * 2)
+    dense = semantic_search(query, top_k=top_k * 2, use_hyde=use_hyde)
+    sparse = lexical_search(query, top_k=top_k * 2, method=lexical_method)
 
     # Step 2: merge bằng RRF
     merged = rerank_rrf([dense, sparse], top_k=top_k * 2)

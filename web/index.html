@@ -75,6 +75,14 @@
             <input type="checkbox" id="rerank" checked />
             <span>Rerank</span>
           </label>
+          <label class="toggle" title="HyDE: embed tài liệu giả định thay vì câu hỏi">
+            <input type="checkbox" id="hyde" />
+            <span>HyDE</span>
+          </label>
+          <label class="toggle" title="Lexical: BM25 (mặc định) hay TF-IDF cosine">
+            <input type="checkbox" id="tfidf" />
+            <span>TF-IDF</span>
+          </label>
           <button type="submit" id="send" class="send" aria-label="Gửi">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>

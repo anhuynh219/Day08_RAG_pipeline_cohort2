@@ -20,9 +20,12 @@ from src.task10_generation import TEMPERATURE, TOP_P, build_messages
 st.set_page_config(page_title="RAG — Pháp luật ma tuý", page_icon="⚖️", layout="wide")
 
 
-def answer_with_memory(query: str, history: list[dict], top_k: int, use_reranking: bool):
+def answer_with_memory(query, history, top_k, use_reranking, use_hyde=False, lexical_method="bm25"):
     """Retrieve + generate có ngữ cảnh hội thoại (memory)."""
-    chunks = retrieve(query, top_k=top_k, use_reranking=use_reranking)
+    chunks = retrieve(
+        query, top_k=top_k, use_reranking=use_reranking,
+        use_hyde=use_hyde, lexical_method=lexical_method,
+    )
     if not chunks:
         return "Tôi không thể xác minh thông tin này từ nguồn hiện có.", [], "none"
 
@@ -43,6 +46,9 @@ with st.sidebar:
     st.header("⚙️ Cấu hình")
     top_k = st.slider("Top-K chunks", 3, 10, 5)
     use_reranking = st.toggle("Dùng reranking (Jina)", value=True)
+    use_hyde = st.toggle("Dùng HyDE", value=False, help="Embed tài liệu giả định thay vì câu hỏi")
+    lexical_method = st.radio("Lexical search", ["bm25", "tfidf"], horizontal=True,
+                              help="BM25 (xác suất, bão hoà TF) vs TF-IDF (vector-space cosine)")
     st.caption(f"Model: `{CHAT_MODEL}`")
     if st.button("🗑️ Xoá hội thoại"):
         st.session_state.messages = []
@@ -86,7 +92,9 @@ if prompt := st.chat_input("Nhập câu hỏi của bạn…"):
                 {"role": m["role"], "content": m["content"]}
                 for m in st.session_state.messages[:-1]
             ]
-            answer, sources, via = answer_with_memory(prompt, history, top_k, use_reranking)
+            answer, sources, via = answer_with_memory(
+                prompt, history, top_k, use_reranking, use_hyde, lexical_method
+            )
         st.markdown(answer)
         if sources:
             with st.expander(f"📚 {len(sources)} nguồn đã dùng · retrieval: {via}"):

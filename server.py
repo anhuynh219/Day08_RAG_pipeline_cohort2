@@ -34,6 +34,8 @@ class ChatRequest(BaseModel):
     history: list[dict] = []
     top_k: int = 5
     use_reranking: bool = True
+    use_hyde: bool = False
+    lexical_method: str = "bm25"  # "bm25" | "tfidf"
 
 
 def _source_card(chunk: dict) -> dict:
@@ -54,7 +56,13 @@ def _source_card(chunk: dict) -> dict:
 def chat(req: ChatRequest):
     def stream():
         # 1) Retrieve (Task 9) — gửi nguồn về trước để UI hiện ngay.
-        chunks = retrieve(req.message, top_k=req.top_k, use_reranking=req.use_reranking)
+        chunks = retrieve(
+            req.message,
+            top_k=req.top_k,
+            use_reranking=req.use_reranking,
+            use_hyde=req.use_hyde,
+            lexical_method=req.lexical_method,
+        )
         via = chunks[0].get("source", "hybrid") if chunks else "none"
         yield json.dumps(
             {"type": "sources", "via": via, "sources": [_source_card(c) for c in chunks]},

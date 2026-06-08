@@ -72,7 +72,7 @@ Mọi tác vụ AI (embedding, rerank, generation) đều gọi qua API. Hệ qu
 | **Vector store** | **numpy local** (`embeddings.npy` + `chunks.json`) | Lưu & tìm vector | Embedding đã tính qua API → chỉ cần lưu ma trận + cosine; **không cần Docker/Weaviate** | Weaviate Cloud (đã có key nhưng thêm phụ thuộc mạng/schema), ChromaDB, FAISS |
 | **Chunking** | `RecursiveCharacterTextSplitter` 800/120 | Cắt tài liệu | Cắt theo `\n\n→\n→". "` giữ ngữ nghĩa điều/khoản; 800 ký tự đủ 1 ý, overlap 15% chống mất ngữ cảnh ranh giới | MarkdownHeaderSplitter, SemanticChunker (nặng hơn) |
 | **Semantic search** | Cosine trên ma trận numpy | Dense retrieval | Đơn giản, đủ nhanh với vài nghìn chunk | ANN index (FAISS/HNSW) — chưa cần ở quy mô này |
-| **Lexical search** | **BM25** (`rank-bm25`) | Sparse retrieval | Bắt **khớp từ khoá/số điều** (vd "Điều 249") mà dense hay bỏ sót; thuần Python, nhẹ | TF-IDF, Elasticsearch (nặng) |
+| **Lexical search** | **BM25** (`rank-bm25`) + **TF-IDF** (numpy, tuỳ chọn) | Sparse retrieval | Bắt **khớp từ khoá/số điều** (vd "Điều 249") mà dense hay bỏ sót; thuần Python, nhẹ. Có sẵn 2 cơ chế để so sánh trong demo (toggle TF-IDF) | Elasticsearch (nặng) |
 | **Hợp nhất** | **Reciprocal Rank Fusion** (k=60) | Gộp dense + sparse | Không cần chuẩn hoá thang điểm khác nhau; bền vững, kinh điển (Cormack 2009) | Weighted sum (nhạy thang điểm) |
 | **Reranking** | **Jina Reranker v2** (multilingual) qua API + fallback lexical | Chấm lại độ liên quan | Cross-encoder cho độ chính xác cao, đa ngữ; gọi **API** nên không tải model; tự fallback khi hết quota | Qwen3-Reranker (tải model), MMR/RRF (đã implement dự phòng) |
 | **Vectorless fallback** | **PageIndex** | RAG không vector (cây tài liệu) | Văn bản luật có cấu trúc mục/điều rõ → hợp với duyệt cây; làm *fallback* khi hybrid yếu | Chỉ dùng hybrid (thiếu phương án dự phòng) |
@@ -107,6 +107,12 @@ Mọi tác vụ AI (embedding, rerank, generation) đều gọi qua API. Hệ qu
 
 6. **UI: nhãn nguồn thân thiện.**
    Model trích dẫn theo tên file; tầng hiển thị map sang tên đẹp (luật → tên văn bản, tin tức → tiêu đề bài báo) cho citation chip & source card.
+
+7. **HyDE (Hypothetical Document Embeddings) — tùy chọn.**
+   Câu hỏi và đoạn văn trả lời nằm ở vùng vector khác nhau. Khi bật HyDE, hệ thống
+   nhờ Gemini sinh một "đoạn văn giả định" trả lời câu hỏi (văn phong luật/báo), rồi
+   **embed đoạn văn đó thay vì câu hỏi** → gần các chunk đáp án hơn, tăng recall. Bật/tắt
+   bằng toggle "HyDE" trên UI (`src/task5_semantic_search.py: generate_hyde`).
 
 ---
 

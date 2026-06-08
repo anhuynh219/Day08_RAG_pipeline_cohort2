@@ -6,6 +6,8 @@ const form = document.getElementById("composer");
 const input = document.getElementById("input");
 const sendBtn = document.getElementById("send");
 const rerank = document.getElementById("rerank");
+const hyde = document.getElementById("hyde");
+const tfidf = document.getElementById("tfidf");
 
 const messages = []; // memory: [{role, content}]
 const labelMap = {}; // filename -> nhãn thân thiện (lấy từ sources)
@@ -126,6 +128,8 @@ async function ask(text) {
         message: text,
         history: historyToSend,
         use_reranking: rerank.checked,
+        use_hyde: hyde.checked,
+        lexical_method: tfidf.checked ? "tfidf" : "bm25",
       }),
     });
 
